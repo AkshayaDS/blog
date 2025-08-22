@@ -15,15 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
+from blogapp import views  # Import your app's views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.home, name='home'),  # Root URL for the slider
+    path('register/', views.register, name='register'),  # Register page
+    path('collections/', views.collections, name='collections'),  # Collections page
+]
 
 from django.conf import settings
 from django.conf.urls.static import static 
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('',include('blogapp.urls')),  
-]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-   
