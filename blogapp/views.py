@@ -10,3 +10,6 @@ def register(request):
 def collections(request):
     blogs = Blog.objects.all()  # Fetch all blogs
     return render(request, 'blog/collections.html', {'blogs': blogs})  # Collections page
+
+def login(request):
+    return render(request, 'blog/login.html')  # Login page
