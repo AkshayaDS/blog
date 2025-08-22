@@ -1,0 +1,6 @@
+.carousel-img {
+object-fit: cover;
+object-position: top;
+height:100vh;
+overflow: hidden;
+}
