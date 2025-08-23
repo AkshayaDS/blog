@@ -1,33 +1,38 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Blog, Comment, Favorite
+from .models import Blog, Comment, Favorite, CodeAnalysis, AnalysisIssue  # CORRECT
 
+# Register your models here.
+# Note: Only import and register models that actually exist in models.py
 
-@admin.register(Blog)
-class BlogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'category', 'created_at', 'updated_at', 'image_tag')
-    list_filter = ('author', 'category', 'created_at')
-    search_fields = ('title', 'content')
+# If you have a BlogPost model, uncomment this:
+# from .models import BlogPost
+# admin.site.register(BlogPost)
+
+# The CodeAnalysis and AnalysisIssue models will be added later
+# after we create them in models.py
+
+@admin.register(CodeAnalysis)
+class CodeAnalysisAdmin(admin.ModelAdmin):
+    list_display = ('filename', 'language', 'status', 'total_issues_display', 'created_at', 'user_ip')
+    list_filter = ('language', 'status', 'created_at')
+    search_fields = ('filename', 'user_ip')
+    readonly_fields = ('analysis_result', 'created_at')
     ordering = ('-created_at',)
+    
+    def total_issues_display(self, obj):
+        count = obj.total_issues
+        if count == 0:
+            return format_html('<span style="color: green;">✓ 0</span>')
+        elif count < 5:
+            return format_html('<span style="color: orange;">⚠ {}</span>', count)
+        else:
+            return format_html('<span style="color: red;">❌ {}</span>', count)
+    total_issues_display.short_description = 'Issues Found'
 
-    def image_tag(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" width="80" height="60" />'.format(obj.image.url))
-        return "No Image"
-    image_tag.short_description = 'Image'
-
-
-@admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ('blog', 'user', 'content', 'created_at')
-    list_filter = ('created_at', 'user')
-    search_fields = ('content', 'user__username', 'blog__title')
-    ordering = ('-created_at',)
-
-
-@admin.register(Favorite) 
-class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'blog', 'added_at')
-    list_filter = ('added_at', 'user')
-    search_fields = ('user__username', 'blog__title')
-    ordering = ('-added_at',)
+@admin.register(AnalysisIssue)
+class AnalysisIssueAdmin(admin.ModelAdmin):
+    list_display = ('title', 'analysis', 'issue_type', 'severity', 'line_number')
+    list_filter = ('issue_type', 'severity', 'analysis__language')
+    search_fields = ('title', 'description', 'analysis__filename')
+    ordering = ('-analysis__created_at', 'line_number')

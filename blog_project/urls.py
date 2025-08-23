@@ -26,4 +26,11 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),  # Logout page
     path('collections/', views.collections, name='collections'),  # Collections page
     path('blog/<int:blog_id>/', views.blog_detail, name='blog_detail'),  # Blog detail page
+    
+    # Code Analyzer URLs
+    path('analyzer/', views.analyzer_home, name='analyzer_home'),
+    path('analyzer/analyze/', views.analyze_code, name='analyze_code'),
+    path('analyzer/results/<int:analysis_id>/', views.analysis_results, name='analysis_results'),
+    path('analyzer/download/<int:analysis_id>/', views.download_report, name='download_report'),
+    path('analyzer/api/analyze/', views.api_analyze, name='api_analyze'),
 ]
