@@ -132,4 +132,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Add at the end of the file
-OPENAI_API_KEY = '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'  # Replace with your actual API key
+OPENAI_API_KEY = 'your-openai-api-key-here'  # Replace with your actual API key
