@@ -1,0 +1,22 @@
+{% extends 'layouts/main.html' %}
+{% block title %}
+{{ blog.title }} - Blog
+{% endblock title %}
+
+{% block content %}
+<div class="container" style="margin-top: 70px;">
+    <div class="row">
+        <div class="col-12">
+            <h1>{{ blog.title }}</h1>
+            <p class="text-muted">Category: {{ blog.category }}</p>
+            <p class="text-muted">Author: {{ blog.author.username }}</p>
+            <p class="text-muted">Published on: {{ blog.created_at|date:"F j, Y" }}</p>
+            <hr>
+            {% if blog.image %}
+                <img src="{{ blog.image.url }}" class="img-fluid mb-4" alt="{{ blog.title }}">
+            {% endif %}
+            <p>{{ blog.content }}</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

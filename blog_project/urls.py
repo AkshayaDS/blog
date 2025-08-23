@@ -20,15 +20,10 @@ from blogapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),  # Root URL for the slider
-    path('home/', views.home, name='home'),  # Home page
+    path('', views.home, name='home'),  # Home page
     path('register/', views.register, name='register'),  # Register page
-    path('collections/', views.collections, name='collections'),  # Collections page
     path('login/', views.login, name='login'),  # Login page
+    path('logout/', views.logout, name='logout'),  # Logout page
+    path('collections/', views.collections, name='collections'),  # Collections page
+    path('blog/<int:blog_id>/', views.blog_detail, name='blog_detail'),  # Blog detail page
 ]
-
-from django.conf import settings
-from django.conf.urls.static import static 
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
