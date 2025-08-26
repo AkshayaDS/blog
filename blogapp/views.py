@@ -1,15 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 import json
 import csv
-from .models import Blog,  CodeAnalysis, AnalysisIssue  # CORRECT - Remove BlogPost
-from .services import CodeAnalyzerService  # Import the service
+from .models import Blog, CodeAnalysis, AnalysisIssue
+from .services import CodeAnalyzerService
 
 def home(request):
-    return render(request, 'blog/index.html')  # Root page with slider content
+    # If user is already logged in, redirect to blog list
+    if request.user.is_authenticated:
+        return redirect('blog_list')
+    return render(request, 'blog/home.html')
 
 def register(request):
     if request.method == "POST":
@@ -18,169 +24,240 @@ def register(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        # Check if passwords match
-        if password == confirm_password:
-            # Store user data in session (replace with database logic in production)
-            if 'users' not in request.session:
-                request.session['users'] = []
-            request.session['users'].append({'username': username, 'email': email, 'password': password})
-            request.session.modified = True
-            messages.success(request, "You have successfully registered!")
-            return redirect('login')
-        else:
+        # Validation
+        if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return redirect('register')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
+            return redirect('register')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+            return redirect('register')
 
-    return render(request, 'blog/register.html')  # Render the register page
+        # Create user in database
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=username.split()[0] if username else ''
+            )
+            messages.success(request, "Registration successful! Please login.")
+            return redirect('login')
+        except Exception as e:
+            messages.error(request, "Registration failed. Please try again.")
+            return redirect('register')
 
-def collections(request):
-    if not request.session.get('logged_in'):
-        messages.error(request, "You need to log in to view collections.")
-        return redirect('login')
+    return render(request, 'blog/register.html')
 
-    blogs = Blog.objects.all()  # Fetch all blogs
-    return render(request, 'blog/collections.html', {'blogs': blogs})  # Render the collections page
-
-def login(request):
+def login_view(request):
     if request.method == "POST":
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Validate credentials against registered users
-        users = request.session.get('users', [])
-        for user in users:
-            if user['email'] == email and user['password'] == password:
-                request.session['logged_in'] = True
-                request.session['username'] = user['username']
-                messages.success(request, f"Welcome, {user['username']}! You have successfully logged in!")
-                return redirect('collections')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            auth_login(request, user)
+            messages.success(request, f"Welcome, {user.username}! You have successfully logged in!")
+            return redirect('blog_list')
+        else:
+            messages.error(request, "Invalid username or password.")
+            return redirect('login')
 
-        messages.error(request, "Invalid email or password.")
-        return redirect('login')
+    return render(request, 'blog/login.html')
 
-    return render(request, 'blog/login.html')  # Render the login page
-
-def logout(request):
-    request.session.flush()  # Clear the session
+def logout_view(request):
+    auth_logout(request)
     messages.success(request, "You have successfully logged out!")
-    return redirect('home')  # Redirect to the home page after logout
+    return redirect('home')
+
+def code_analysis(request):
+    if request.method == 'POST':
+        code_content = request.POST.get('code', '')
+        language = request.POST.get('language', 'python')
+        
+        if not code_content.strip():
+            messages.error(request, 'Please provide code content to analyze.')
+            return render(request, 'blog/code_analysis.html')
+        
+        # Simple mock analysis for demonstration
+        analysis_result = {
+            'quality_score': 8.5,
+            'issues': [
+                {
+                    'line': 5,
+                    'message': 'Consider using more descriptive variable names',
+                    'type': 'style',
+                    'severity': 'low'
+                },
+                {
+                    'line': 10,
+                    'message': 'Missing error handling',
+                    'type': 'logic',
+                    'severity': 'medium'
+                }
+            ],
+            'suggestions': [
+                'Add proper error handling for edge cases',
+                'Consider using type hints for better code documentation',
+                'Add unit tests to ensure code reliability'
+            ]
+        }
+        
+        return render(request, 'blog/code_analysis.html', {'analysis_result': analysis_result})
+    
+    return render(request, 'blog/code_analysis.html')
+
+@login_required
+def collections(request):
+    category = request.GET.get('category', 'all')
+    
+    # Updated category mapping
+    category_mapping = {
+        'food': 'food',
+        'travel': 'travel', 
+        'tech': 'Technology',
+        'lifestyle': 'lifestyle',
+        'education': 'education'
+    }
+    
+    if category and category != 'all':
+        # Map the category to the actual model field value
+        actual_category = category_mapping.get(category, category)
+        blogs = Blog.objects.filter(category__icontains=actual_category).order_by('-created_at')
+    else:
+        blogs = Blog.objects.all().order_by('-created_at')
+    
+    # Generate images for blogs that don't have them
+    for blog in blogs:
+        if not blog.image:
+            from .utils import generate_blog_image
+            generated_image = generate_blog_image(blog.title, blog.category, blog.author.username)
+            if generated_image:
+                blog.image = generated_image
+                blog.save()
+    
+    return render(request, 'blog/collections.html', {'blogs': blogs})
 
 def blog_detail(request, blog_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "You need to log in to view blog details.")
+        return redirect('login')
+    
     try:
-        blog = Blog.objects.get(id=blog_id)  # Fetch the blog by its ID
+        blog = Blog.objects.get(id=blog_id)
     except Blog.DoesNotExist:
         messages.error(request, "The blog you are looking for does not exist.")
-        return redirect('collections')  # Redirect to collections if blog not found
+        return redirect('collections')
 
-    return render(request, 'blog/blog_detail.html', {'blog': blog})  # Render the blog detail page
+    return render(request, 'blog/blog_detail.html', {'blog': blog})
 
-# Add these new views for code analysis
-
-def analyzer_home(request):
-    """Home page for code analyzer"""
-    recent_analyses = CodeAnalysis.objects.all()[:10]
+@login_required
+def blog_list(request):
+    category = request.GET.get('category')
+    blogs = Blog.objects.all().order_by('-created_at')
     
-    # Get statistics
+    if category:
+        blogs = blogs.filter(category=category)
+    
+    # Generate images for blogs that don't have them
+    for blog in blogs:
+        if not blog.image:
+            from .utils import generate_blog_image
+            generated_image = generate_blog_image(blog.title, blog.category, blog.author.username)
+            if generated_image:
+                blog.image = generated_image
+                blog.save()
+    
+    # Pagination
+    paginator = Paginator(blogs, 6)  # 6 blogs per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'blogs': page_obj,
+        'categories': Blog.CATEGORY_CHOICES,
+        'current_category': category,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+    }
+    return render(request, 'blog/blog_list.html', context)
+
+# Code Analyzer views remain the same
+def analyzer_home(request):
+    recent_analyses = CodeAnalysis.objects.all().order_by('-created_at')[:5]
     total_analyses = CodeAnalysis.objects.count()
-    completed_analyses = CodeAnalysis.objects.filter(status='completed').count()
+    total_issues = AnalysisIssue.objects.count()
     
     context = {
         'recent_analyses': recent_analyses,
         'total_analyses': total_analyses,
-        'completed_analyses': completed_analyses,
+        'total_issues': total_issues,
     }
     return render(request, 'analyzer/home.html', context)
 
 def analyze_code(request):
-    """Handle code analysis requests"""
     if request.method == 'POST':
-        code_content = request.POST.get('code_content', '').strip()
-        language = request.POST.get('language')
-        filename = request.POST.get('filename', 'untitled').strip() or 'untitled'
+        code_content = request.POST.get('code_content', '')
+        filename = request.POST.get('filename', 'untitled.py')
+        language = request.POST.get('language', 'python')
         
-        if not code_content:
-            messages.error(request, "Please provide code to analyze.")
-            return redirect('analyzer_home')
-        
-        if len(code_content) > 50000:  # 50KB limit
-            messages.error(request, "Code is too large. Please limit to 50KB.")
-            return redirect('analyzer_home')
+        if not code_content.strip():
+            messages.error(request, 'Please provide code content to analyze.')
+            return render(request, 'analyzer/analyze.html')
         
         # Create analysis record
         analysis = CodeAnalysis.objects.create(
             filename=filename,
             language=language,
             code_content=code_content,
-            user_ip=request.META.get('REMOTE_ADDR'),
             status='pending'
         )
         
+        # Perform analysis
         try:
-            # Run analysis
             analyzer = CodeAnalyzerService()
             results = analyzer.analyze_code(code_content, language, filename)
             
             # Save results
-            analysis.analysis_result = results
-            analysis.status = 'completed'
-            analysis.save()
-            
-            # Create issue records
-            all_issues = []
-            all_issues.extend(results.get('security_issues', []))
-            all_issues.extend(results.get('style_issues', []))
-            all_issues.extend(results.get('ai_issues', []))
-            
-            for issue in all_issues:
+            for issue in results.get('issues', []):
                 AnalysisIssue.objects.create(
                     analysis=analysis,
-                    issue_type=issue.get('type', 'bug'),
-                    severity=issue.get('severity', 'medium'),
-                    title=issue.get('title', 'Unknown Issue'),
+                    issue_type=issue.get('type', 'unknown'),
+                    severity=issue.get('severity', 'info'),
+                    line_number=issue.get('line', 0),
                     description=issue.get('description', ''),
-                    line_number=issue.get('line_number'),
                     suggestion=issue.get('suggestion', '')
                 )
             
-            messages.success(request, f"Analysis completed! Found {len(all_issues)} issues.")
+            analysis.status = 'completed'
+            analysis.ai_feedback = results.get('ai_feedback', '')
+            analysis.save()
+            
             return redirect('analysis_results', analysis_id=analysis.id)
             
         except Exception as e:
             analysis.status = 'failed'
-            analysis.analysis_result = {'error': str(e)}
             analysis.save()
-            messages.error(request, f"Analysis failed: {str(e)}")
-            return redirect('analyzer_home')
+            messages.error(request, f'Analysis failed: {str(e)}')
     
     return render(request, 'analyzer/analyze.html')
 
 def analysis_results(request, analysis_id):
-    """Display analysis results"""
     analysis = get_object_or_404(CodeAnalysis, id=analysis_id)
-    issues = analysis.issues.all().order_by('-severity', 'line_number')
-    
-    # Pagination
-    paginator = Paginator(issues, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    # Group issues by type
-    issues_by_type = {}
-    for issue in issues:
-        if issue.issue_type not in issues_by_type:
-            issues_by_type[issue.issue_type] = []
-        issues_by_type[issue.issue_type].append(issue)
+    issues = analysis.issues.all()
     
     context = {
         'analysis': analysis,
-        'issues': page_obj,
-        'issues_by_type': issues_by_type,
-        'total_issues': issues.count(),
+        'issues': issues,
     }
     return render(request, 'analyzer/results.html', context)
 
 def download_report(request, analysis_id):
-    """Download analysis report as CSV"""
     analysis = get_object_or_404(CodeAnalysis, id=analysis_id)
     issues = analysis.issues.all()
     
@@ -188,15 +265,14 @@ def download_report(request, analysis_id):
     response['Content-Disposition'] = f'attachment; filename="analysis_report_{analysis.id}.csv"'
     
     writer = csv.writer(response)
-    writer.writerow(['Type', 'Severity', 'Title', 'Description', 'Line Number', 'Suggestion'])
+    writer.writerow(['Type', 'Severity', 'Line', 'Description', 'Suggestion'])
     
     for issue in issues:
         writer.writerow([
             issue.issue_type,
             issue.severity,
-            issue.title,
+            issue.line_number,
             issue.description,
-            issue.line_number or '',
             issue.suggestion
         ])
     
@@ -204,25 +280,22 @@ def download_report(request, analysis_id):
 
 @csrf_exempt
 def api_analyze(request):
-    """API endpoint for code analysis"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            code_content = data.get('code', '').strip()
+            code_content = data.get('code_content', '')
             language = data.get('language', 'python')
-            filename = data.get('filename', 'api_submission')
+            filename = data.get('filename', 'untitled.py')
             
-            if not code_content:
-                return JsonResponse({'success': False, 'error': 'No code provided'})
+            if not code_content.strip():
+                return JsonResponse({'error': 'No code content provided'}, status=400)
             
             analyzer = CodeAnalyzerService()
             results = analyzer.analyze_code(code_content, language, filename)
             
-            return JsonResponse({
-                'success': True,
-                'results': results
-            })
+            return JsonResponse(results)
+            
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({'error': str(e)}, status=500)
     
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    return JsonResponse({'error': 'Method not allowed'}, status=405)

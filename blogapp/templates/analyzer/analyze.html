@@ -2,58 +2,69 @@
 {% block title %}Analyze Code - AI Code Analyzer{% endblock %}
 
 {% block content %}
-<div class="container" style="margin-top: 70px;">
-    <div class="row">
-        <div class="col-12">
-            <h2>📝 Code Analysis</h2>
-            <p class="text-muted">Paste your code below and get comprehensive analysis results.</p>
-            
-            <form method="POST" action="{% url 'analyze_code' %}" id="analyzeForm">
-                {% csrf_token %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">📝 Code Analysis Dashboard</h2>
+                    <p class="mb-0 text-light">Paste your code below and get comprehensive analysis results.</p>
+                </div>
                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="filename" class="form-label">Filename (optional)</label>
-                            <input type="text" class="form-control" id="filename" name="filename" 
-                                   placeholder="e.g., main.py, script.js">
+                <div class="card-body">
+                    <form method="POST" action="{% url 'analyze_code' %}" id="analyzeForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="filename" class="form-label">📄 Filename (optional)</label>
+                                    <input type="text" class="form-control" id="filename" name="filename" 
+                                           placeholder="e.g., main.py, script.js, app.java">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="language" class="form-label">💻 Programming Language *</label>
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="">Select Language</option>
+                                        <option value="python">🐍 Python</option>
+                                        <option value="javascript">📜 JavaScript</option>
+                                        <option value="java">☕ Java</option>
+                                        <option value="html">🌐 HTML</option>
+                                        <option value="css">🎨 CSS</option>
+                                        <option value="cpp">⚡ C++</option>
+                                        <option value="c">🔧 C</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
+                        
                         <div class="mb-3">
-                            <label for="language" class="form-label">Programming Language *</label>
-                            <select class="form-select" id="language" name="language" required>
-                                <option value="">Select Language</option>
-                                <option value="python">🐍 Python</option>
-                                <option value="javascript">📜 JavaScript</option>
-                                <option value="java">☕ Java</option>
-                                <option value="html">🌐 HTML</option>
-                                <option value="css">🎨 CSS</option>
-                                <option value="cpp">⚡ C++</option>
-                                <option value="c">🔧 C</option>
-                            </select>
+                            <label for="code_content" class="form-label">💾 Code Content *</label>
+                            <textarea class="form-control" id="code_content" name="code_content" 
+                                      rows="20" required placeholder="// Paste your code here for analysis...
+
+function example() {
+    console.log('Hello World');
+    return 'Professional Analysis Ready!';
+}"></textarea>
+                            <div class="form-text">
+                                📋 Maximum size: 50KB. Supports Python, JavaScript, Java, HTML, CSS, C++, C and more!
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                                🔍 Analyze Code
+                            </button>
+                            <a href="{% url 'analyzer_home' %}" class="btn btn-secondary">
+                                ← Back to Analyzer
+                            </a>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="mb-3">
-                    <label for="code_content" class="form-label">Code Content *</label>
-                    <textarea class="form-control" id="code_content" name="code_content" 
-                              rows="20" required placeholder="Paste your code here..."></textarea>
-                    <div class="form-text">
-                        Maximum size: 50KB. Supported languages: Python, JavaScript, Java, HTML, CSS, C++, C
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
-                        🔍 Analyze Code
-                    </button>
-                    <a href="{% url 'analyzer_home' %}" class="btn btn-secondary">
-                        ← Back to Analyzer
-                    </a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -62,7 +73,7 @@
 document.getElementById('analyzeForm').onsubmit = function() {
     const btn = document.getElementById('analyzeBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>🔄 Analyzing...';
     return true;
 };
 </script>

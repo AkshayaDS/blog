@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Professional Blog{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            {% if user.is_authenticated %}
+                <a href="{% url 'blog_list' %}" class="logo">📚 Professional Blog</a>
+            {% else %}
+                <a href="{% url 'home' %}" class="logo">📚 Professional Blog</a>
+            {% endif %}
+            <ul class="nav-links">
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'blog_list' %}">Blogs</a></li>
+                    <li><a href="{% url 'collections' %}">Collections</a></li>
+                    <li><a href="{% url 'code_analysis' %}">Code Analysis</a></li>
+                    <li><a href="#">Welcome, {{ user.username }}</a></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 Professional Blog. Crafted with care in elegant brown theme.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Code Analysis - Professional Blog{% endblock %}
+
+{% block content %}
+<div class="code-analysis">
+    <h1 style="color: var(--dark-brown); margin-bottom: 2rem; text-align: center;">
+        🔍 Professional Code Analysis
+    </h1>
+    
+    <form method="post" style="background: var(--beige); padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="code">Paste your code here:</label>
+            <textarea name="code" id="code" class="form-control" rows="10" 
+                      placeholder="// Paste your code here for analysis...
+function example() {
+    console.log('Hello World');
+}"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="language">Programming Language:</label>
+            <select name="language" id="language" class="form-control">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="csharp">C#</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            🚀 Analyze Code
+        </button>
+    </form>
+
+    {% if analysis_result %}
+    <div class="analysis-result">
+        <h2 style="color: var(--dark-brown); margin-bottom: 1rem;">📊 Analysis Results</h2>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+            <h3 style="color: var(--primary-brown);">Code Quality Score: 
+                <span style="color: var(--accent-gold);">{{ analysis_result.quality_score }}/10</span>
+            </h3>
+        </div>
+
+        {% if analysis_result.issues %}
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+            <h3 style="color: var(--primary-brown); margin-bottom: 1rem;">⚠️ Issues Found:</h3>
+            {% for issue in analysis_result.issues %}
+            <div style="background: var(--cream); padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid var(--secondary-brown);">
+                <strong>Line {{ issue.line }}:</strong> {{ issue.message }}
+                <br><small style="color: var(--text-light);">Type: {{ issue.type }} | Severity: {{ issue.severity }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if analysis_result.suggestions %}
+        <div style="background: white; padding: 1.5rem; border-radius: 10px;">
+            <h3 style="color: var(--primary-brown); margin-bottom: 1rem;">💡 Suggestions:</h3>
+            <ul style="color: var(--text-dark);">
+                {% for suggestion in analysis_result.suggestions %}
+                <li style="margin: 0.5rem 0;">{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Recent Analyses -->
+    <div style="background: white; padding: 2rem; border-radius: 15px; margin-top: 2rem;">
+        <h2 style="color: var(--dark-brown); margin-bottom: 1rem;">📈 Recent Analyses</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            <!-- Placeholder for recent analyses -->
+            <div style="background: var(--beige); padding: 1rem; border-radius: 10px; border: 2px solid var(--light-brown);">
+                <h4 style="color: var(--primary-brown);">JavaScript Analysis</h4>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Quality Score: 8.5/10</p>
+                <small style="color: var(--text-light);">2 hours ago</small>
+            </div>
+            <div style="background: var(--beige); padding: 1rem; border-radius: 10px; border: 2px solid var(--light-brown);">
+                <h4 style="color: var(--primary-brown);">Python Analysis</h4>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Quality Score: 9.2/10</p>
+                <small style="color: var(--text-light);">1 day ago</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.innerHTML = '<span class="loading"></span> Analyzing...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

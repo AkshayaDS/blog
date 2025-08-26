@@ -1,16 +1,17 @@
 {% extends 'layouts/main.html' %}
-{% block title %}AI Code Analyzer - Blog{% endblock %}
+{% block title %}AI Code Analyzer - Professional Blog{% endblock %}
 
 {% block content %}
-<div class="container" style="margin-top: 70px;">
-    <div class="row">
-        <div class="col-12 text-center mb-5">
-            <h1 class="display-4">🔍 AI Code Analyzer</h1>
-            <p class="lead">Upload your code and get instant AI-powered security, bug, and style analysis.</p>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="display-4">🔍 AI Code Analyzer</h1>
+        <p class="lead">Upload your code and get instant AI-powered security, bug, and style analysis.</p>
+        <div class="mt-4">
             <a href="{% url 'analyze_code' %}" class="btn btn-primary btn-lg me-3">
-                <i class="fas fa-code"></i> Start Analysis
+                🚀 Start Analysis
             </a>
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">
                 ← Back to Blog
             </a>
         </div>
@@ -19,26 +20,26 @@
     <!-- Statistics Cards -->
     <div class="row mb-5">
         <div class="col-md-4">
-            <div class="card text-center bg-primary text-white">
+            <div class="card text-center" style="background: var(--primary-brown); color: white;">
                 <div class="card-body">
                     <h2>{{ total_analyses }}</h2>
-                    <p>Total Analyses</p>
+                    <p class="mb-0">Total Analyses</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center bg-success text-white">
+            <div class="card text-center" style="background: var(--accent-gold); color: var(--dark-brown);">
                 <div class="card-body">
-                    <h2>{{ completed_analyses }}</h2>
-                    <p>Completed</p>
+                    <h2>{{ total_issues }}</h2>
+                    <p class="mb-0">Issues Found</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center bg-info text-white">
+            <div class="card text-center" style="background: var(--secondary-brown); color: white;">
                 <div class="card-body">
                     <h2>7+</h2>
-                    <p>Languages Supported</p>
+                    <p class="mb-0">Languages Supported</p>
                 </div>
             </div>
         </div>
@@ -47,29 +48,32 @@
     <!-- Features -->
     <div class="row mb-5">
         <div class="col-12">
-            <h3>🚀 Features</h3>
+            <h3 style="color: var(--dark-brown); margin-bottom: 2rem;">🚀 Powerful Features</h3>
             <div class="row">
                 <div class="col-md-4">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🛡️ Security Analysis</h5>
-                            <p class="card-text">Detects security vulnerabilities using Bandit and other security tools.</p>
+                        <div class="card-body text-center">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🛡️</div>
+                            <h5 class="card-title">Security Analysis</h5>
+                            <p class="card-text">Detects security vulnerabilities and potential threats in your code.</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🎨 Style Checking</h5>
-                            <p class="card-text">Enforces coding standards with Flake8 and custom linting rules.</p>
+                        <div class="card-body text-center">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+                            <h5 class="card-title">Style Checking</h5>
+                            <p class="card-text">Enforces coding standards and best practices across languages.</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🤖 AI-Powered Review</h5>
-                            <p class="card-text">Uses OpenAI GPT to provide intelligent code suggestions and bug detection.</p>
+                        <div class="card-body text-center">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+                            <h5 class="card-title">AI-Powered Review</h5>
+                            <p class="card-text">Intelligent suggestions and bug detection using advanced AI.</p>
                         </div>
                     </div>
                 </div>
@@ -80,52 +84,58 @@
     {% if recent_analyses %}
     <div class="row">
         <div class="col-12">
-            <h3>📋 Recent Analyses</h3>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Filename</th>
-                            <th>Language</th>
-                            <th>Status</th>
-                            <th>Issues Found</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for analysis in recent_analyses %}
-                        <tr>
-                            <td><strong>{{ analysis.filename }}</strong></td>
-                            <td><span class="badge bg-secondary">{{ analysis.get_language_display }}</span></td>
-                            <td>
-                                {% if analysis.status == 'completed' %}
-                                    <span class="badge bg-success">Completed</span>
-                                {% elif analysis.status == 'pending' %}
-                                    <span class="badge bg-warning">Pending</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Failed</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if analysis.status == 'completed' %}
-                                    <span class="badge bg-info">{{ analysis.total_issues }}</span>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>{{ analysis.created_at|date:"M d, Y H:i" }}</td>
-                            <td>
-                                {% if analysis.status == 'completed' %}
-                                    <a href="{% url 'analysis_results' analysis.id %}" class="btn btn-sm btn-primary">
-                                        View Results
-                                    </a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">📋 Recent Analyses</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>📄 Filename</th>
+                                    <th>💻 Language</th>
+                                    <th>📊 Status</th>
+                                    <th>⚠️ Issues</th>
+                                    <th>📅 Date</th>
+                                    <th>🔧 Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in recent_analyses %}
+                                <tr>
+                                    <td><strong>{{ analysis.filename }}</strong></td>
+                                    <td><span class="badge bg-secondary">{{ analysis.get_language_display }}</span></td>
+                                    <td>
+                                        {% if analysis.status == 'completed' %}
+                                            <span class="badge" style="background: #8FBC8F;">Completed</span>
+                                        {% elif analysis.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if analysis.status == 'completed' %}
+                                            <span class="badge bg-info">{{ analysis.issues.count }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ analysis.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if analysis.status == 'completed' %}
+                                            <a href="{% url 'analysis_results' analysis.id %}" class="btn btn-sm btn-primary">
+                                                View Results
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

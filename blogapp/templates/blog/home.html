@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - Professional Blog{% endblock %}
+
+{% block content %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; text-align: center;">
+        <!-- Welcome Header -->
+        <div style="background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); padding: 3rem; margin-bottom: 2rem;">
+            <h1 style="color: #2c3e50; font-size: 3rem; margin-bottom: 1rem; font-weight: 700;">
+                Welcome to Our Blog
+            </h1>
+            <p style="color: #7f8c8d; font-size: 1.3rem; margin-bottom: 2rem; line-height: 1.6;">
+                Discover amazing stories, insights, and knowledge from our community of writers.
+                Join us to explore content on technology, lifestyle, travel, food, and education.
+            </p>
+            
+            <!-- Feature highlights -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                <div style="padding: 1rem;">
+                    <div style="background: #3498db; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        📚
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Rich Content</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Diverse topics and engaging stories</p>
+                </div>
+                
+                <div style="padding: 1rem;">
+                    <div style="background: #e74c3c; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        👥
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Community</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Connect with like-minded readers</p>
+                </div>
+                
+                <div style="padding: 1rem;">
+                    <div style="background: #27ae60; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                        🔍
+                    </div>
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Easy Discovery</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Find content that interests you</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Login/Register Actions -->
+        <div style="background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); padding: 2rem;">
+            <h2 style="color: #2c3e50; margin-bottom: 1.5rem; font-size: 1.8rem;">
+                Ready to Get Started?
+            </h2>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'login' %}" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                          color: white; 
+                          padding: 1rem 2rem; 
+                          border-radius: 50px; 
+                          text-decoration: none; 
+                          font-weight: 600; 
+                          font-size: 1.1rem;
+                          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+                          transition: all 0.3s ease;
+                          display: inline-block;
+                          min-width: 150px;">
+                    Login
+                </a>
+                
+                <a href="{% url 'register' %}" 
+                   style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+                          color: white; 
+                          padding: 1rem 2rem; 
+                          border-radius: 50px; 
+                          text-decoration: none; 
+                          font-weight: 600; 
+                          font-size: 1.1rem;
+                          box-shadow: 0 8px 25px rgba(245, 87, 108, 0.3);
+                          transition: all 0.3s ease;
+                          display: inline-block;
+                          min-width: 150px;">
+                    Register
+                </a>
+            </div>
+            
+            <p style="color: #7f8c8d; margin-top: 1.5rem; font-size: 0.95rem;">
+                Please login or register to access our blog content and join our community.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Hover effects for buttons */
+a[href*="login"]:hover, a[href*="register"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr;
+    }
+    
+    h1[style*="font-size: 3rem"] {
+        font-size: 2rem !important;
+    }
+    
+    div[style*="display: flex"] a {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

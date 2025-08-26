@@ -1,33 +1,96 @@
 {% extends 'layouts/main.html' %}
-{% block title %}
-Collections - Blog
-{% endblock title %}
+{% block title %}Collections - Professional Blog{% endblock %}
 
 {% block content %}
-<div class="container" style="margin-top: 70px;">
-    <div class="row">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <h1>Collections</h1>
-            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a> <!-- Logout button -->
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 style="color: var(--dark-brown); margin-bottom: 1rem;">📚 Blog Collections</h1>
+        <p class="lead">Discover amazing content across various categories</p>
+        <div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+            <span class="badge bg-primary">Welcome, {{ user.username }}!</span>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
         </div>
-        <hr>
     </div>
+    
+    <!-- Enhanced Category Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3" style="color: var(--dark-brown);">🎯 Browse by Category</h5>
+                    <div class="btn-group flex-wrap" role="group" aria-label="Category Filter">
+                        <a href="?category=all" class="btn btn-outline-primary {% if not request.GET.category or request.GET.category == 'all' %}active{% endif %}">
+                            🌟 All Posts
+                        </a>
+                        <a href="?category=food" class="btn btn-outline-primary {% if request.GET.category == 'food' %}active{% endif %}">
+                            🍕 Food & Recipes
+                        </a>
+                        <a href="?category=travel" class="btn btn-outline-primary {% if request.GET.category == 'travel' %}active{% endif %}">
+                            ✈️ Travel Adventures
+                        </a>
+                        <a href="?category=tech" class="btn btn-outline-primary {% if request.GET.category == 'tech' %}active{% endif %}">
+                            💻 Technology
+                        </a>
+                        <a href="?category=lifestyle" class="btn btn-outline-primary {% if request.GET.category == 'lifestyle' %}active{% endif %}">
+                            🌿 Lifestyle
+                        </a>
+                        <a href="?category=education" class="btn btn-outline-primary {% if request.GET.category == 'education' %}active{% endif %}">
+                            📖 Education
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Blog Grid -->
     <div class="row">
         {% for blog in blogs %}
-            <div class="col-md-4">
-                <div class="card mb-4">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
                     {% if blog.image %}
                         <img src="{{ blog.image.url }}" class="card-img-top" alt="{{ blog.title }}">
+                    {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 250px; background: linear-gradient(45deg, var(--light-brown), var(--cream)); color: var(--dark-brown); font-size: 1.5rem;">
+                            📝 {{ blog.category|default:"Blog" }}
+                        </div>
                     {% endif %}
-                    <div class="card-body">
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-primary">{{ blog.get_category_display|default:blog.category }}</span>
+                        </div>
                         <h5 class="card-title">{{ blog.title }}</h5>
-                        <p class="card-text">{{ blog.content|truncatewords:20 }}</p>
-                        <a href="{% url 'blog_detail' blog.id %}" class="btn btn-primary">Read More</a> <!-- Link to blog detail page -->
+                        <p class="card-text flex-grow-1">{{ blog.content|truncatewords:15 }}</p>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">
+                                    👤 {{ blog.author.username }}
+                                </small>
+                                <small class="text-muted">
+                                    📅 {{ blog.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                            <a href="{% url 'blog_detail' blog.id %}" class="btn btn-primary w-100">
+                                📖 Read Full Article
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <p>No blogs available.</p>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h4 style="color: var(--text-light);">📭 No blogs found</h4>
+                        <p class="text-muted">There are no blogs available in this category yet.</p>
+                        <p class="text-muted">Check back later for amazing new content!</p>
+                        <a href="?category=all" class="btn btn-primary">View All Posts</a>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
     </div>
 </div>

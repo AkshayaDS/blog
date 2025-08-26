@@ -56,7 +56,7 @@ ROOT_URLCONF = 'blog_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -64,6 +64,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -130,6 +131,11 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Login/Logout redirects
+LOGIN_URL = '/'  # Redirect to home page when login required
+LOGIN_REDIRECT_URL = '/blogs/'  # Redirect to blog list after successful login
+LOGOUT_REDIRECT_URL = '/'  # Redirect to home page after logout
 
 # Add at the end of the file
 OPENAI_API_KEY = 'sk-proj--FJO00t_IXsoYpJPnkjqN4V1fLFH3F792nLSw5tYdaLnuybVgd5XqynmKNgd8YUWUb3wjYvWJVT3BlbkFJtKzXmGuvAGGEh0vIvHERBeyYNL67fZc_bGkZMZJrkeuzK4NFdbbvPV19CqUfXav2aBr6O_i0IAx'  # Replace with your actual API key
